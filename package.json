@@ -1,0 +1,53 @@
+{
+  "name": "barclaysStatement2json",
+  "_id": "barclaysStatement2json@0.1.1",
+  "version": "0.1.1",
+  "description": "A PDF file parser that converts Barclays PDF Statments to text based JSON, powered by porting a fork of pdf2json",
+  "keywords": [
+    "barclays statement parser",
+    "barclays bank statement parser",
+	"parse barclays",
+    "convert barclays statement to json"
+  ],
+  "author": {
+    "name": "Peter Hibbert"
+  },
+  "homepage": "https://github.com/barkbarkuk/barclaysStatement2json",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/barkbarkuk/barclaysStatement2json.git"
+  },
+  "engines": {
+    "node": ">=0.8"
+  },
+  "dependencies": {
+    "pdf2json": ">=0.6.8",
+    "underscore": ">=1.4.2",
+	"optimist": ">=0.3.5",
+    "async": ">=0.2.6"
+  },
+  "devDependencies": {},
+  "maintainers": [
+    {
+      "name": "Peter Hibbert"
+    }
+  ],
+  "contributors": [],
+  "bugs": {
+    "url": "http://github.com/barkbarkuk/barclaysStatement2json/issues"
+  },
+  "licenses": [
+    {
+      "type": "LGPL",
+      "url": "http://www.gnu.org/licenses/lgpl.html"
+    }
+  ],
+  "readme": "https://github.com/barkbarkuk/barclaysStatement2json/readme.md",
+  "_from": "barclaysStatement2json@",
+  "bundleDependencies": [
+    "pdf2json",
+    "underscore",
+    "optimist",
+    "async"
+  ]
+}

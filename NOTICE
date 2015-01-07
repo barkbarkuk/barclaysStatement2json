@@ -1,0 +1,2 @@
+This code is heavily based on, and makes use of as a module, the work by https://github.com/modesty from the https://github.com/modesty/pdf2json repository.
+The author (https://github.com/barkbarkuk) added the ability to parse the JSON returned from the above works to build a structured JSON document when the PDFs are Barclays Bank statements.
