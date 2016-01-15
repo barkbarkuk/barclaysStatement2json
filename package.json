@@ -6,7 +6,7 @@
   "keywords": [
     "barclays statement parser",
     "barclays bank statement parser",
-	"parse barclays",
+    "parse barclays",
     "convert barclays statement to json"
   ],
   "author": {
@@ -23,8 +23,9 @@
   "dependencies": {
     "pdf2json": ">=0.6.8",
     "underscore": ">=1.4.2",
-	"optimist": ">=0.3.5",
-    "async": ">=0.2.6"
+    "optimist": ">=0.3.5",
+    "async": ">=0.2.6",
+    "node-dir": "~0.1.10"
   },
   "devDependencies": {},
   "maintainers": [

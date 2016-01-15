@@ -3,8 +3,6 @@ var PDFJS = require("pdf2json/lib/pdf.js"),
 	nodeUtil = require("util"),
     nodeEvents = require("events"),
 	_ = require('underscore'),
-    fs = require('fs'),
-    async = require("async"),
 	bsParser = require("./lib/bsParser.js"),
 	bsParserUtils = require("./lib/bsParserUtils.js");
 
@@ -29,10 +27,9 @@ var StatementParser = (function () {
         this.get_id = function() { return _id; };
         this.get_name = function() { return _name + _id; };
 
-        // service context object, only used in Web Service project; null in command line
+        // service context object
         this.context = context;
 
-        this.pdfFilePath = null; //current PDF file to load and parse, null means loading/parsing not started
         this.data = null; //if file read success, data is PDF content; if failed, data is "err" object
         
 		this.PDFJS = new PDFJS(false);
@@ -64,9 +61,19 @@ var StatementParser = (function () {
 			_.extend(this.data, data);
 		}
 		this.parsePropCount++;
-		
+//	    console.log("Partially parsed PDF content? ", this.context, this.parsePropCount)
         if (this.parsePropCount >= 2) {
-			var bsStatement = parse(data);
+            // console.log("Parsed PDF content, now parsing statement. ", this.context)
+            var bsStatement;
+            try {
+                bsStatement = parse(data);           // This is where we transition from PDF parsing to statement parsing
+            } catch (error) {
+                if (!bsStatement) {
+                    bsStatement = {};
+                }
+                bsStatement.error = error;
+            }
+
 			if (bsStatement.error) {
 				this.data = bsStatement.error;
 				this.emit("bsParser_dataError", this);		
@@ -80,6 +87,7 @@ var StatementParser = (function () {
 
     var _onPDFJSParserDataError = function(data) {
         this.data = data;
+        console.log("Error parsing PDF content", this.context)
         this.emit("bsParser_dataError", this);
     };
 
@@ -90,74 +98,33 @@ var StatementParser = (function () {
         this.PDFJS.on("pdfjs_parseDataReady", _.bind(_onPDFJSParseDataReady, this));
         this.PDFJS.on("pdfjs_parseDataError", _.bind(_onPDFJSParserDataError, this));
 
-        this.PDFJS.parsePDFData(buffer || _binBuffer[this.pdfFilePath]);
+        this.PDFJS.parsePDFData(buffer);
     };
-
-    var processBinaryCache = function() {
-        if (_.has(_binBuffer, this.pdfFilePath)) {
-            startParsingPDF.call(this);
-            return true;
-        }
-
-        var allKeys = _.keys(_binBuffer);
-        if (allKeys.length > _maxBinBufferCount) {
-            var idx = this.get_id() % _maxBinBufferCount;
-            var key = allKeys[idx];
-            _binBuffer[key] = null;
-            delete _binBuffer[key];
-
-            nodeUtil.p2jinfo("re-cycled cache for " + key);
-        }
-
-        return false;
-    };
-	
-    var processPDFContent = function(err, data) {
-        nodeUtil.p2jinfo("Load PDF file status:" + (!!err ? "Error!" : "Success!") );
-        if (err) {
-            this.data = err;
-            this.emit("bsParser_dataError", this);
-        }
-        else {
-            _binBuffer[this.pdfFilePath] = data;
-            startParsingPDF.call(this);
-        }
-    };	
-	
-    var fq = async.queue(function (task, callback) {
-        fs.readFile(task.path, callback);
-     }, 250);
 	 
-	// public (every instance will share the same method, but has no access to private fields defined in constructor)
-    cls.prototype.loadPDF = function (pdfFilePath, verbosity) {
-        nodeUtil.verbosity(verbosity);
-        nodeUtil.p2jinfo("about to load PDF file " + pdfFilePath);
-
-        this.pdfFilePath = pdfFilePath;
-
-        if (processBinaryCache.call(this))
-            return;
-
-        fq.push({path: pdfFilePath}, _.bind(processPDFContent, this));
-    };
-	
+    // public (every instance will share the same method, but has no access to private fields defined in constructor)	
     cls.prototype.destroy = function() {
         this.removeAllListeners();
 
-        //context object will be set in Web Service project, but not in command line utility
         if (this.context) {
             this.context.destroy();
             this.context = null;
         }
 
-        this.pdfFilePath = null;
         this.data = null;
 
         this.PDFJS.destroy();
         this.PDFJS = null;
 
         this.parsePropCount = 0;
-    };	
+    };
+
+    cls.prototype.setVerbosity = function(verbosity) {
+        nodeUtil.verbosity(verbosity);
+    }
+
+    cls.prototype.parseBuffer = function (pdfBuffer) {
+        startParsingPDF.call(this, pdfBuffer);
+    };
 	
     return cls;	
 })();
